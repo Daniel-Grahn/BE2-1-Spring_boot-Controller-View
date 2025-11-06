@@ -22,11 +22,11 @@ public class BookController {
         bookList.add(new Book("atomic habits", "James Clear", "self-help / nonfiction"));
     }
 
-    /**
-     * Displays the home page and adds the current time to the model.
-     * 
-     * @param model
-     * @return
+     /**
+     * Renders the current time to the view.
+     *
+     * @param model model used to pass data to the view
+     * @return the view name "home"
      */
     @GetMapping("/home")
     public String greating(Model model) {
@@ -36,11 +36,11 @@ public class BookController {
         return "home";
     }
 
-    /**
-     * Returns all books.
-     * 
-     * @param model
-     * @return
+     /**
+     * Returns a view that displays all books.
+     *
+     * @param model model used to pass data to the view
+     * @return the view name "booklist"
      */
     @GetMapping("/books")
     public String getBooks(Model model) {
@@ -50,11 +50,14 @@ public class BookController {
     }
 
     /**
-     * Shows either a list of genres (if no type is given)
-     * or a list of books filtered by genre.
-     * 
-     * @param type
-     * @return
+     * Displays either a list of available genres (if no type is provided)
+     * or a list of books filtered by a specific genre.
+     *
+     * If the user provides a genre that does not exist,
+     * the view will return the available genres and set "noMatch" to true.
+     *
+     * @param type genre filter (optional)
+     * @return a ModelAndView pointing to the "genre" view
      */
     @GetMapping("/genre")
     public ModelAndView getBooksByGenre(@RequestParam(required = false) String type) {
@@ -67,15 +70,14 @@ public class BookController {
 
         if (type == null) {
             mav.addObject("genres", genres);
-            // genre
-        } else if (!genres.contains(type)) {// om type är fel så vill vi se vad man kan välja
+        } else if (!genres.contains(type)) {//type has no match genres 
             mav.addObject("genres", genres);
             if (!type.isEmpty() || !type.equals("")) {
                 mav.addObject("noMatch", true);
             }
 
         } else {
-            // books
+            // recommended books
             List<Book> books = new ArrayList<>();
             for (Book book : bookList) {
                 String genre = book.getGenre();
