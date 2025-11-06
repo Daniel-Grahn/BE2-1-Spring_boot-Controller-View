@@ -8,7 +8,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
-
 import se.yrgo.domain.Book;
 
 @Controller
@@ -23,7 +22,12 @@ public class BookController {
         bookList.add(new Book("atomic habits", "James Clear", "self-help / nonfiction"));
     }
 
-    
+    /**
+     * Displays the home page and adds the current time to the model.
+     * 
+     * @param model
+     * @return
+     */
     @GetMapping("/home")
     public String greating(Model model) {
         LocalDateTime date = LocalDateTime.now();
@@ -33,44 +37,56 @@ public class BookController {
     }
 
     /**
+     * Returns all books.
      * 
-    */
+     * @param model
+     * @return
+     */
     @GetMapping("/books")
     public String getBooks(Model model) {
-        //Do not want to reffrens the real bookList. therefor it's List.copyOf(bookList)
-        //Could also do something like this 
-        //List.of(Collections.unmodifiableList(bookList));
-        //but i do not want to have a "living" list.
         List<Book> books = List.copyOf(bookList);
         model.addAttribute("books", books);
-
         return "booklist";
     }
 
+    /**
+     * Shows either a list of genres (if no type is given)
+     * or a list of books filtered by genre.
+     * 
+     * @param type
+     * @return
+     */
     @GetMapping("/genre")
-    public String getBooksByGenre(@RequestParam(required = false) String type, Model model) {
-        // Välja en genre och få en lista med böcker inom den genren.
-        if(type == null){
-            //genre
-            Set<String> genres = new TreeSet<>();
-            for (Book book : bookList) {
-                genres.add(book.getGenre());
+    public ModelAndView getBooksByGenre(@RequestParam(required = false) String type) {
+        ModelAndView mav = new ModelAndView("genre");
+
+        Set<String> genres = new TreeSet<>();
+        for (Book book : bookList) {
+            genres.add(book.getGenre());
+        }
+
+        if (type == null) {
+            mav.addObject("genres", genres);
+            // genre
+        } else if (!genres.contains(type)) {// om type är fel så vill vi se vad man kan välja
+            mav.addObject("genres", genres);
+            if (!type.isEmpty() || !type.equals("")) {
+                mav.addObject("noMatch", true);
             }
-            model.addAttribute("genres", genres);
-        }else{
-            //books
+
+        } else {
+            // books
             List<Book> books = new ArrayList<>();
             for (Book book : bookList) {
                 String genre = book.getGenre();
-                if(genre.equals(type)){
+                if (genre.equals(type)) {
                     books.add(book);
                 }
             }
-            model.addAttribute("books", books);
+            mav.addObject("books", books);
         }
-        
 
-        return "genre";
+        return mav;
     }
 
 }
